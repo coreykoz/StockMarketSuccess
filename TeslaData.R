@@ -18,5 +18,4 @@ TSLA.pred2 <- forecast:::forecast.HoltWinters(TSLA.pred, h = 100)
 TSLA.pred2
 forecast:::plot.forecast(TSLA.pred2)
 
-#Task: get data into time series
 

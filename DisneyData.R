@@ -7,4 +7,13 @@ library("quantmod")
 getSymbols(Symbols = "DIS", auto.assign = TRUE)
 plot(DIS$DIS.Close)
 
-#Task: get data into time series
+DIS.pred <- HoltWinters(DIS$DIS.Close, beta = FALSE, gamma = FALSE)
+DIS.pred
+
+plot(DIS.pred)
+
+install.packages("forecast")
+library("forecast")
+DIS.pred2 <- forecast:::forecast.HoltWinters(DIS.pred, h = 100)
+DIS.pred2
+forecast:::plot.forecast(DIS.pred2)

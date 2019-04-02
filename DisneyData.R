@@ -1,4 +1,1 @@
-#Test
-#yeehaw
-#testing 3
-#dvirtess
+#Task: get data into file

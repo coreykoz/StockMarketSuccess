@@ -5,3 +5,5 @@ library("quantmod")
 #Task: get data into file
 getSymbols(Symbols = "KO", auto.assign = TRUE)
 plot(KO$KO.Close)
+
+#Task: get data into time series

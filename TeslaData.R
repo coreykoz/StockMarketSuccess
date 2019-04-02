@@ -4,4 +4,4 @@ library("quantmod")
 
 
 #Task: get data into file
-tesladata <- getSymbols(Symbols = "TSLA", auto.assign = TRUE)
+tesladata.ts <- getSymbols(Symbols = "TSLA", auto.assign = TRUE)

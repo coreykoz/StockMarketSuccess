@@ -4,5 +4,5 @@ library("quantmod")
 
 
 #Task: get data into file
-disneydata.ts <- getSymbols(Symbols = "DIS", auto.assign = TRUE)
-
+getSymbols(Symbols = "DIS", auto.assign = TRUE)
+head(TSLA)

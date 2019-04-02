@@ -5,4 +5,4 @@ library("quantmod")
 
 #Task: get data into file
 getSymbols(Symbols = "DIS", auto.assign = TRUE)
-head(DIS)
+plot(DIS$DIS.Close)

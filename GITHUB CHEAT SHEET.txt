@@ -1,0 +1,3 @@
+1) git add .
+2) git commit . -m "sdhiosadgsadgj;sadg"
+3) git push origin master

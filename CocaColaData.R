@@ -18,15 +18,10 @@ KO.pred2 <- forecast:::forecast.HoltWinters(KO.pred, h = 100)
 KO.pred2
 forecast:::plot.forecast(KO.pred2)
 
-#Math Graphing
-#simulate some data
-set.seed(20160227)
-x<-seq(0,50,1)
-y<-((runif(1,10,20)*x)/(runif(1,0,10)+x))+rnorm(51,0,1)
-#for simple models nls find good starting values for the parameters even if it throw a warning
-m<-nls(y~a*x/(b+x))
-#get some estimation of goodness of fit
-cor(y,predict(m))
-#plot
-plot(x,y)
-lines(x,predict(m),lty=2,col="red",lwd=3)
+#NLS
+require(graphics)
+## using a selfStart model
+fm1DNase1 <- nls(density ~ SSlogis(log(conc), Asym, xmid, scal), DNase1)
+summary(fm1DNase1)
+plot(fm1DNase1)
+plot(DNase1)

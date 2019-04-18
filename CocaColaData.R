@@ -1,6 +1,7 @@
-#Installing quantmod
+#Installing quantmod annd other libraries
 install.packages("quantmod")
 library("quantmod")
+library(zoo)
 
 #Task: get data into file
 getSymbols(Symbols = "KO", auto.assign = TRUE)
@@ -19,9 +20,9 @@ KO.pred2
 forecast:::plot.forecast(KO.pred2)
 
 #NLS
-require(graphics)
-## using a selfStart model
-fm1DNase1 <- nls(density ~ SSlogis(log(conc), Asym, xmid, scal), DNase1)
-summary(fm1DNase1)
-plot(fm1DNase1)
-plot(DNase1)
+#getSymbols('UNRATE', src = 'CocaCola')
+#z <- as.zoo(UNRATE)
+
+KO.df <- data.frame(Y = as.matrix(KO$KO.Close), date = time())
+
+model <- nls(KO$KO.Close~20*log(200*time(KO$KO.Close)+20), start = time('2007-01-03'))

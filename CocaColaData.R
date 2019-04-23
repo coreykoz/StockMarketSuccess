@@ -20,9 +20,4 @@ KO.pred2
 forecast:::plot.forecast(KO.pred2)
 
 #NLS
-#getSymbols('UNRATE', src = 'CocaCola')
-#z <- as.zoo(UNRATE)
-
-KO.df <- data.frame(Y = as.matrix(KO$KO.Close), X = date())
-
-model <- nls(KO$KO.Close~20*log(200*time(KO$KO.Close))+20, KO)
+model <- nls(KO$KO.Close~a*log(b*time(KO$KO.Close))+c, start=list(a = 20, b = 200, c = 20))

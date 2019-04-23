@@ -17,3 +17,6 @@ library("forecast")
 DIS.pred2 <- forecast:::forecast.HoltWinters(DIS.pred, h = 100)
 DIS.pred2
 forecast:::plot.forecast(DIS.pred2)
+
+#NLS
+model <- nls(KO$KO.Close~a*log(b*time(KO$KO.Close))+c, start=list(a = 20, b = 200, c = 20))

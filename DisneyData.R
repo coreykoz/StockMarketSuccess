@@ -24,3 +24,4 @@ forecast:::plot.forecast(DIS.pred2)
 #Getting rid of all of the "noise"
 DIS.rel <- DIS$DIS.Close[2000:nrow(DIS$DIS.Close),]
 plot(DIS.rel)
+#put in linear regression

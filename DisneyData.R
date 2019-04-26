@@ -1,6 +1,8 @@
 #Installing quantmod
 install.packages("quantmod")
-library("quantmod")
+install.packages("TimeWarp")
+library(quantmod)
+library(TimeWarp)
 
 #Task: get data into file
 getSymbols(Symbols = "DIS", auto.assign = TRUE)
@@ -18,10 +20,19 @@ DIS.pred2
 forecast:::plot.forecast(DIS.pred2)
 
 #NLS
-#model <- nls(KO$KO.Close~a*log(b*time(KO$KO.Close))+c, start=list(a = 20, b = 200, c = 20))
+
 
 #Filtering for all of the relevant data.
 #Getting rid of all of the "noise"
-DIS.rel <- DIS$DIS.Close[2000:nrow(DIS$DIS.Close),]
-plot(DIS.rel)
-#put in linear regression
+subset <- DIS[2000:nrow(DIS),]
+
+# Work with subset from now on. Chart subset (note I removed
+# subset argument from call to chartSeries)
+chartSeries(subset, TA = NULL, theme = "white", up.col = "green", dn.col = "red")
+
+# Linear model on same range as your chart
+indices = 1:nrow(subset)
+model=lm(DIS.Close~indices,data=subset)
+
+# Draw line
+abline(model$coefficients[1],model$coefficients[2])

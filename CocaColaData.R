@@ -1,7 +1,8 @@
 #Installing quantmod annd other libraries
 install.packages("quantmod")
-library("quantmod")
-
+install.packages("TimeWarp")
+library(quantmod)
+library(TimeWarp)
 
 
 #Task: get data into file
@@ -22,9 +23,15 @@ forecast:::plot.forecast(KO.pred2)
 
 #Filtering for all of the relevant data.
 #Getting rid of all of the "noise"
-KO.rel <- KO$KO.Close[1500:nrow(KO$KO.Close),]
-plot(KO.rel)
-#put in linear regression
+subset = KO[1500:nrow(KO),]
 
+# Work with subset from now on. Chart subset (note I removed
+# subset argument from call to chartSeries)
+chartSeries(subset, TA = NULL, theme = "white", up.col = "green", dn.col = "red")
 
+# Linear model on same range as your chart
+indices = 1:nrow(subset)
+model=lm(KO.Close~indices,data=subset)
 
+# Draw line
+abline(model$coefficients[1],model$coefficients[2])

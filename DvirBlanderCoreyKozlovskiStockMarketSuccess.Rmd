@@ -136,6 +136,8 @@ model=lm(TSLA.Close~indices,data=subset)
 abline(model$coefficients[1],model$coefficients[2])
 ```
 
+Based on the graph above, Tesla seems to be a stock that is decreasing in value.
+
 Here are the steps for Linear Regression in the Coca Cola dataset. First we restrict the domain of the dataset to only view the most recent trend of the data.
 ```{r }
 subset = KO[1500:nrow(KO),]
@@ -151,6 +153,8 @@ model=lm(KO.Close~indices,data=subset)
 abline(model$coefficients[1],model$coefficients[2])
 ```
 
+Based on the graph above, Coca Cola seems to be a stock that is increasing in value.
+
 Here are the steps for Linear Regression in the Disney dataset. First we restrict the domain of the dataset to only view the most recent trend of the data.
 ```{r }
 subset <- DIS[2000:nrow(DIS),]
@@ -165,6 +169,8 @@ indices = 1:nrow(subset)
 model=lm(DIS.Close~indices,data=subset)
 abline(model$coefficients[1],model$coefficients[2])
 ```
+
+Based on the graph above, Disney seems to be a stock that is increasing in value.
 
 Based on the pros and cons of each method of forecasting, we are going to weigh each model differently, placing higher weight on Time-Series and Current Events, and lower weights on Neural Networks and Linear Regression. The different weights for each model will be based on how we expect each model to contribute to our conclusion. Since our pros and cons for the Time Series and the Current Events has led us to believe more in those methods, they will have higher contribution than Neural Networks and Linear Regression. If we learn that our method is successful, we think it could be very useful in predicting the outcome of future stocks for a variety of other companies as well.
 

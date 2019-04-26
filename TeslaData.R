@@ -7,11 +7,6 @@ install.packages("lubridate")
 install.packages("neuralnet")
 install.packages("BBmisc")
 
-install.packages("tfestimators")
-  install_tensorflow()
-  install.packages("devtools")
-  devtools::install_github("rstudio/tensorflow")
-
 library("quantmod")
 library("xts")
 library("forecast")
@@ -19,10 +14,6 @@ library("zoo")
 library("lubridate")
 library("neuralnet")
   
-library("tfestimators")
-library("devtools")
-library("BBmisc")
-
 #Task: get data into file
 getSymbols(Symbols = "TSLA", auto.assign = TRUE)
 plot(TSLA$TSLA.Close)
@@ -118,14 +109,6 @@ plot(TSLA.NN)
 
 TSLA.pred <- predict(TSLA.NN, TSLA.test[,1:11])
 plot(TSLA.pred)
-
-#tensorflow? 
-#Long-short term memory?
-
-
-
-
-
 
 
 

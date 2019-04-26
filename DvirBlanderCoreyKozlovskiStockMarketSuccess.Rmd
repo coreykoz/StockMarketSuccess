@@ -86,6 +86,269 @@ forecast:::plot.forecast(DIS.pred2)
 ## Description for Neural Networks
 Moving forward with Neural Networks, we will be using the “neuralnet”, ”xts”, ”zoo”, ”lubridate”, ”BBmisc” libraries in r. We understand that it is beneficial for larger datasets and that it can be more efficient in terms of time to be run. However, our datasets are not in the size of millions and it is difficult to build and understand a neural network algorithm. Thus, it is to be expected that this method will be weighed less than other methods.
 
+Here is the code for Tesla. We first start by creating a new dataframe, as the values we are using to learn are different than the other methods. We also have to filter the dataset, as seen in the for loop.
+```{r }
+TSLA.df <- data.frame("Open" = TSLA$TSLA.Open, "Close" = TSLA$TSLA.Close, "Year"=as.numeric(format(index(TSLA), "%Y")), 
+                      "Month"=as.numeric(format(index(TSLA), "%m")), "Day"=as.numeric(format(index(TSLA), "%d")), 
+                      "Is_Month_Start" = FALSE, "Is_Month_End" = FALSE, "Is_Year_End" = FALSE,
+                      "Is_Year_Start" = FALSE, "Is_Quarter_Start" = FALSE, "Is_Quarter_End" = FALSE,
+                      "Quarters"=quarters(index(TSLA)))
+
+for (i in 1:nrow(TSLA.df)){
+  
+  date <- as.POSIXlt(paste(TSLA.df[i,]$Year, "-", TSLA.df[i,]$Month, "-", TSLA.df[i,]$Day, sep=""))
+  
+  #Determine if it is beginning/end of the month and change dataset accordingly
+  if (TSLA.df[i,]$Day <= 7){ #7 is the first ~25% of the month
+    TSLA.df[i,]$Is_Month_Start = TRUE
+  } else if (TSLA.df[i,]$Day > 24){ #24 is the last ~25% of the month
+    TSLA.df[i,]$Is_Month_End = TRUE
+  }
+  
+  #Determine if it is the beginning/end of the year and change dataset accordingly
+  if (TSLA.df[i,]$Quarters == 'Q1'){ #Q1 is the first ~25% of the year
+    TSLA.df[i,]$Is_Year_Start = TRUE
+  } else if (TSLA.df[i,]$Quarters == 'Q4'){ #Q4 is the last ~25% of the year
+    TSLA.df[i,]$Is_Year_End = TRUE
+  }
+  
+  #Determine if it is the beginning of the quarter and change dataset accordingly
+  if (yday(date) <= 22){ #days 1-22 is the first ~25% of Q1
+    TSLA.df[i,]$Is_Quarter_Start = TRUE
+  } else if (yday(date) > 91 &  yday(date) <= 113){ #days 91-113 is the first ~25% of Q2
+    TSLA.df[i,]$Is_Quarter_Start = TRUE
+  } else if (yday(date) > 182 & yday(date) <=204){ #days 182-204 is the first ~25% of Q3
+    TSLA.df[i,]$Is_Quarter_Start = TRUE 
+  } else if (yday(date) > 273 & yday(date) <=296){ #days 273-296 is the first ~25% of Q4
+    TSLA.df[i,]$Is_Quarter_Start = TRUE 
+  }
+  
+  #Determine if it is the end of the quarter and change dataset accordingly
+  if (yday(date) <= 91 & yday(date) >= 69){ #days 69-91 is the last ~25% of Q1
+    TSLA.df[i,]$Is_Quarter_End = TRUE
+  } else if (yday(date) <= 182 &  yday(date) >= 160){ #days 160-182 is the last ~25% of Q2
+    TSLA.df[i,]$Is_Quarter_End = TRUE
+  } else if (yday(date) <= 273 & yday(date) >= 251){ #days 251-273 is the last ~25% of Q3
+    TSLA.df[i,]$Is_Quarter_End = TRUE 
+  } else if (yday(date) <= 366 & yday(date) >= 343){ #days 343-365 is the last ~25% of Q4
+    TSLA.df[i,]$Is_Quarter_End = TRUE 
+  }
+}
+
+TSLA.df <- TSLA.df[,1:11]#Remove the last column, as it was only used to clean data
+
+#change true/false values into 1/0s to prepare for normalization.
+cols <- sapply(TSLA.df, is.logical)
+TSLA.df[,cols] <- lapply(TSLA.df[,cols], as.numeric)
+
+```
+
+To use neural networks, we have to normalize the data set. We used the BBmsic library to help us with this.
+```{r}
+TSLA.df <- BBmisc::normalize(TSLA.df)
+```
+
+Now, we make a testing and training set to evaluate the performance of neural networks. We decided to use 75% of the original data set.
+```{r}
+TSLA.train <- TSLA.df[1:(.75 * nrow(TSLA.df)),]
+TSLA.test <- TSLA.df[(.75 * nrow(TSLA.df)):nrow(TSLA.df),]
+```
+
+We now create the neural network and display it.
+```{r}
+TSLA.NN <- neuralnet(TSLA.Close ~ TSLA.Open + Year + Month + Day + Is_Month_Start + Is_Month_End + Is_Year_End + 
+                       Is_Year_Start + Is_Quarter_Start + Is_Quarter_End 
+                     , data = TSLA.train, linear.output=TRUE, hidden=c(5,3,3))
+plot(TSLA.NN)
+```
+
+Using the created neural network, we predict the values and compare them to the actual values. The red line indicates where the training data ends and where the prediction and actual values, respectively, begin.
+```{r}
+TSLA.pred <- predict(TSLA.NN, TSLA.test)
+TSLA.pred.total <- c(TSLA.train$TSLA.Close, TSLA.pred)
+plot(TSLA.pred.total, xlab="Number of Days recorded with Quantmod", ylab="Predicted Stock Value Normalized", main="Normalized Stock Predictions of TSLA")
+abline(v = (.75 * nrow(TSLA.df)), col='red')
+
+plot(TSLA.df$TSLA.Close, xlab="Number of Days recorded with Quantmod", ylab="Actual Stock Value Normalized", main="Actual Stock Values of TSLA")
+abline(v = (.75 * nrow(TSLA.df)), col='red')
+```
+Comparing both graphs, we can see that our predictor did a pretty poor job of predicting the values for TSLA. It predicted much less volatility than what actually happened, and did not predict it to go nearly as high as it did based on the normalized scale. The prediction maxed out at just above 1, but the actual values went more towards 1.5. Other than that, it did manage to predict that there would be 3 large "dips", as both the predicted graph and the actual graph show it. I would not recommend using this method, with the parameters we chose, to predict, but it did do well in seeing dips.
+
+Here is the code for Coca Cola. We first start by creating a new dataframe, as the values we are using to learn are different than the other methods. We also have to filter the dataset, as seen in the for loop.
+```{r }
+KO.df <- data.frame("Open" = KO$KO.Open, "Close" = KO$KO.Close, "Year"=as.numeric(format(index(KO), "%Y")), 
+                      "Month"=as.numeric(format(index(KO), "%m")), "Day"=as.numeric(format(index(KO), "%d")), 
+                      "Is_Month_Start" = FALSE, "Is_Month_End" = FALSE, "Is_Year_End" = FALSE,
+                      "Is_Year_Start" = FALSE, "Is_Quarter_Start" = FALSE, "Is_Quarter_End" = FALSE,
+                      "Quarters"=quarters(index(KO)))
+
+for (i in 1:nrow(KO.df)){
+  
+  date <- as.POSIXlt(paste(KO.df[i,]$Year, "-", KO.df[i,]$Month, "-", KO.df[i,]$Day, sep=""))
+  
+  #Determine if it is beginning/end of the month and change dataset accordingly
+  if (KO.df[i,]$Day <= 7){ #7 is the first ~25% of the month
+    KO.df[i,]$Is_Month_Start = TRUE
+  } else if (KO.df[i,]$Day > 24){ #24 is the last ~25% of the month
+    KO.df[i,]$Is_Month_End = TRUE
+  }
+  
+  #Determine if it is the beginning/end of the year and change dataset accordingly
+  if (KO.df[i,]$Quarters == 'Q1'){ #Q1 is the first ~25% of the year
+    KO.df[i,]$Is_Year_Start = TRUE
+  } else if (KO.df[i,]$Quarters == 'Q4'){ #Q4 is the last ~25% of the year
+    KO.df[i,]$Is_Year_End = TRUE
+  }
+  
+  #Determine if it is the beginning of the quarter and change dataset accordingly
+  if (yday(date) <= 22){ #days 1-22 is the first ~25% of Q1
+    KO.df[i,]$Is_Quarter_Start = TRUE
+  } else if (yday(date) > 91 &  yday(date) <= 113){ #days 91-113 is the first ~25% of Q2
+    KO.df[i,]$Is_Quarter_Start = TRUE
+  } else if (yday(date) > 182 & yday(date) <=204){ #days 182-204 is the first ~25% of Q3
+    KO.df[i,]$Is_Quarter_Start = TRUE 
+  } else if (yday(date) > 273 & yday(date) <=296){ #days 273-296 is the first ~25% of Q4
+    KO.df[i,]$Is_Quarter_Start = TRUE 
+  }
+  
+  #Determine if it is the end of the quarter and change dataset accordingly
+  if (yday(date) <= 91 & yday(date) >= 69){ #days 69-91 is the last ~25% of Q1
+    KO.df[i,]$Is_Quarter_End = TRUE
+  } else if (yday(date) <= 182 &  yday(date) >= 160){ #days 160-182 is the last ~25% of Q2
+    KO.df[i,]$Is_Quarter_End = TRUE
+  } else if (yday(date) <= 273 & yday(date) >= 251){ #days 251-273 is the last ~25% of Q3
+    KO.df[i,]$Is_Quarter_End = TRUE 
+  } else if (yday(date) <= 366 & yday(date) >= 343){ #days 343-365 is the last ~25% of Q4
+    KO.df[i,]$Is_Quarter_End = TRUE 
+  }
+}
+
+KO.df <- KO.df[,1:11]#Remove the last column, it was only used to clean data
+
+#change true/false values into 1/0s
+cols <- sapply(KO.df, is.logical)
+KO.df[,cols] <- lapply(KO.df[,cols], as.numeric)
+```
+
+To use neural networks, we have to normalize the data set. We used the BBmsic library to help us with this.
+```{r}
+KO.df <- BBmisc::normalize(KO.df)
+```
+
+Now, we make a testing and training set to evaluate the performance of neural networks. We decided to use 75% of the original data set.
+```{r}
+KO.train <- KO.df[1:(.75 * nrow(KO.df)),] #75% of data set
+KO.test <- KO.df[(.75 * nrow(KO.df)):nrow(KO.df),]
+```
+
+We now create the neural network and display it.
+```{r}
+KO.NN <- neuralnet(KO.Close ~ KO.Open + Year + Month + Day + Is_Month_Start + Is_Month_End + Is_Year_End + 
+                       Is_Year_Start + Is_Quarter_Start + Is_Quarter_End 
+                     , data = KO.train, linear.output=TRUE, hidden=c(5,3,3))
+plot(KO.NN)
+```
+
+Using the created neural network, we predict the values and compare them to the actual values. The red line indicates where the training data ends and where the prediction and actual values, respectively, begin.
+```{r}
+KO.pred <- predict(KO.NN, KO.test)
+KO.pred.total <- c(KO.train$KO.Close, KO.pred)
+plot(KO.pred.total, xlab="Number of Days recorded with Quantmod", ylab="Predicted Stock Value Normalized", main="Normalized Stock Predictions of KO")
+abline(v = (.75 * nrow(KO.df)), col='red')
+
+plot(KO.df$KO.Close, xlab="Number of Days recorded with Quantmod", ylab="Actual Stock Value Normalized", main="Actual Stock Values of KO")
+abline(v = (.75 * nrow(KO.df)), col='red')
+```
+Surprisingly, this model worked very well for Coca Cola. It managed to predict the 3 peaks fairly accurately and both dips as well. It is nearly exact overall but the only sigificant difference would be that the neural network was significantly less aggressive when predicting peaks. The actual values ended up going a bit higher than predicted, but they were very close. For this data set, I would recommend using this method.
+
+Here is the code for Disney. We first start by creating a new dataframe, as the values we are using to learn are different than the other methods. We also have to filter the dataset, as seen in the for loop.
+```{r }
+DIS.df <- data.frame("Open" = DIS$DIS.Open, "Close" = DIS$DIS.Close, "Year"=as.numeric(format(index(DIS), "%Y")), 
+                      "Month"=as.numeric(format(index(DIS), "%m")), "Day"=as.numeric(format(index(DIS), "%d")), 
+                      "Is_Month_Start" = FALSE, "Is_Month_End" = FALSE, "Is_Year_End" = FALSE,
+                      "Is_Year_Start" = FALSE, "Is_Quarter_Start" = FALSE, "Is_Quarter_End" = FALSE,
+                      "Quarters"=quarters(index(DIS)))
+
+for (i in 1:nrow(DIS.df)){
+  
+  date <- as.POSIXlt(paste(DIS.df[i,]$Year, "-", DIS.df[i,]$Month, "-", DIS.df[i,]$Day, sep=""))
+  
+  #Determine if it is beginning/end of the month and change dataset accordingly
+  if (DIS.df[i,]$Day <= 7){ #7 is the first ~25% of the month
+    DIS.df[i,]$Is_Month_Start = TRUE
+  } else if (DIS.df[i,]$Day > 24){ #24 is the last ~25% of the month
+    DIS.df[i,]$Is_Month_End = TRUE
+  }
+  
+  #Determine if it is the beginning/end of the year and change dataset accordingly
+  if (DIS.df[i,]$Quarters == 'Q1'){ #Q1 is the first ~25% of the year
+    DIS.df[i,]$Is_Year_Start = TRUE
+  } else if (DIS.df[i,]$Quarters == 'Q4'){ #Q4 is the last ~25% of the year
+    DIS.df[i,]$Is_Year_End = TRUE
+  }
+  
+  #Determine if it is the beginning of the quarter and change dataset accordingly
+  if (yday(date) <= 22){ #days 1-22 is the first ~25% of Q1
+    DIS.df[i,]$Is_Quarter_Start = TRUE
+  } else if (yday(date) > 91 &  yday(date) <= 113){ #days 91-113 is the first ~25% of Q2
+    DIS.df[i,]$Is_Quarter_Start = TRUE
+  } else if (yday(date) > 182 & yday(date) <=204){ #days 182-204 is the first ~25% of Q3
+    DIS.df[i,]$Is_Quarter_Start = TRUE 
+  } else if (yday(date) > 273 & yday(date) <=296){ #days 273-296 is the first ~25% of Q4
+    DIS.df[i,]$Is_Quarter_Start = TRUE 
+  }
+  
+  #Determine if it is the end of the quarter and change dataset accordingly
+  if (yday(date) <= 91 & yday(date) >= 69){ #days 69-91 is the last ~25% of Q1
+    DIS.df[i,]$Is_Quarter_End = TRUE
+  } else if (yday(date) <= 182 &  yday(date) >= 160){ #days 160-182 is the last ~25% of Q2
+    DIS.df[i,]$Is_Quarter_End = TRUE
+  } else if (yday(date) <= 273 & yday(date) >= 251){ #days 251-273 is the last ~25% of Q3
+    DIS.df[i,]$Is_Quarter_End = TRUE 
+  } else if (yday(date) <= 366 & yday(date) >= 343){ #days 343-365 is the last ~25% of Q4
+    DIS.df[i,]$Is_Quarter_End = TRUE 
+  }
+}
+
+DIS.df <- DIS.df[,1:11]#Remove the last column, it was only used to clean data
+
+#change true/false values into 1/0s
+cols <- sapply(DIS.df, is.logical)
+DIS.df[,cols] <- lapply(DIS.df[,cols], as.numeric)
+```
+
+To use neural networks, we have to normalize the data set. We used the BBmsic library to help us with this.
+```{r}
+DIS.df <- BBmisc::normalize(DIS.df)
+```
+
+Now, we make a testing and training set to evaluate the performance of neural networks. We decided to use 75% of the original data set.
+```{r}
+DIS.train <- DIS.df[1:(.75 * nrow(DIS.df)),] #75% of data set
+DIS.test <- DIS.df[(.75 * nrow(DIS.df)):nrow(DIS.df),]
+```
+
+We now create the neural network and display it.
+```{r}
+DIS.NN <- neuralnet(DIS.Close ~ DIS.Open + Year + Month + Day + Is_Month_Start + Is_Month_End + Is_Year_End + 
+                       Is_Year_Start + Is_Quarter_Start + Is_Quarter_End 
+                     , data = DIS.train, linear.output=TRUE, hidden=c(5,3,3))
+plot(DIS.NN)
+```
+
+Using the created neural network, we predict the values and compare them to the actual values. The red line indicates where the training data ends and where the prediction and actual values, respectively, begin.
+```{r}
+DIS.pred <- predict(DIS.NN, DIS.test)
+DIS.pred.total <- c(DIS.train$DIS.Close, DIS.pred)
+plot(DIS.pred.total, xlab="Number of Days recorded with Quantmod", ylab="Predicted Stock Value Normalized", main="Normalized Stock Predictions of DIS")
+abline(v = (.75 * nrow(DIS.df)), col='red')
+
+plot(DIS.df$DIS.Close, xlab="Number of Days recorded with Quantmod", ylab="Actual Stock Value Normalized", main="Actual Stock Values of DIS")
+abline(v = (.75 * nrow(DIS.df)), col='red')
+```
+Again, this model performed exceedingly well! It was able to predict 3 peaks, 3 dips, and even manage to predict, towards the very end, the start of a peak. As with the last one, Neural Networks seem to be less aggressive with the predictions overall, as the actual data set reached and exceeded 2, but the predictions didn't quite get there. I would again recommend using this model for our overall stock market prediciton. 
+
+
 ## Description for Linear Regression
 Onward, we will be looking into the Linear Regression method of predicting the future values of our chosen stocks. The method in which this will be executed is by choosing the most recent trend in the data by looking at the plot for each graph and finding a linear regression of the graphs to make predictions. Some benefits for this method is that it will use all of the data and fit the data in the best possible way and the model will also favor newer data rather than older data. Moreover, a property in Calculus is that if one restricts the domain in any graph enough, the graph will show up as linear. This is why Linear Regression is a valid form of analyzinng the data. However, there is a risk in excluding necessary data to create the trend of the graph. Additionally, this is a pretty simplistic way of predicting future stocks. Thus, this may be weighed less than other options. The Timewarp library was used in addition to the quantmod library.
 

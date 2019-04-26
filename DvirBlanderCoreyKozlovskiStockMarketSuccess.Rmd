@@ -65,6 +65,56 @@ Lastly, we will be using a more qualitative form of analysis through the means o
 ## Description for Time Series
 Starting with Time Series, more specifically through the Holt-Winters method, we understand that it is good at seeing long term trends overall and only relies on historical data, which is what we have through the means of the “quantmod” library in R. Some problems in relation to Holt-Winters Time Series is that historical data may not be particularly useful in forecasting future stocks and that it doesn’t take current events into account. To do this, we will be using the “forecast” library in conjunction with the native Holt-Winters Time Series method in R and analyzing the trend it predicts from the data. 
 
+Here is the Holt-Winters code for the Tesla dataset. First, we create the HoltWinters data set shown below.
+```{r cars}
+TSLA.pred <- HoltWinters(TSLA$TSLA.Close, beta = FALSE, gamma = FALSE)
+TSLA.pred
+```
+Here is a plot of the graph predicted by HoltWinters.
+```{r cars}
+plot(TSLA.pred)
+```
+This is the code that has HoltWinters predict what the future of the TSLA stock could be.
+```{r cars}
+TSLA.pred2 <- forecast:::forecast.HoltWinters(TSLA.pred, h = 50)
+TSLA.pred2
+forecast:::plot.forecast(TSLA.pred2)
+```
+
+
+Here is the Holt-Winters code for the Coca Cola dataset. First, we create the HoltWinters data set shown below.
+```{r cars}
+KO.pred <- HoltWinters(KO$KO.Close, beta = FALSE, gamma = FALSE)
+KO.pred
+```
+Here is a plot of the graph predicted by HoltWinters.
+```{r cars}
+plot(KO.pred)
+```
+This is the code that has HoltWinters predict what the future of the TSLA stock could be.
+```{r cars}
+KO.pred2 <- forecast:::forecast.HoltWinters(KO.pred, h = 50)
+KO.pred2
+forecast:::plot.forecast(KO.pred2)
+```
+
+Here is the Holt-Winters code for the Disney dataset. First, we create the HoltWinters data set shown below.
+```{r cars}
+DIS.pred <- HoltWinters(DIS$DIS.Close, beta = FALSE, gamma = FALSE)
+DIS.pred
+```
+Here is a plot of the graph predicted by HoltWinters.
+```{r cars}
+plot(DIS.pred)
+```
+This is the code that has HoltWinters predict what the future of the TSLA stock could be.
+```{r cars}
+DIS.pred2 <- forecast:::forecast.HoltWinters(DIS.pred, h = 50)
+DIS.pred2
+forecast:::plot.forecast(DIS.pred2)
+```
+
+
 ## Description for Neural Networks
 Moving forward with Neural Networks, we will be using the “neuralnet” library in r. We understand that it is beneficial for larger datasets and that it can be more efficient in terms of time to be run. However, our datasets are not in the size of millions and it is difficult to build and understand a neural network algorithm. Thus, it is to be expected that this method will be weighed less than other methods.
 

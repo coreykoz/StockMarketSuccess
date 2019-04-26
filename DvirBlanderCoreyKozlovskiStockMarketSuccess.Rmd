@@ -10,22 +10,171 @@ output: pdf_document
 ## Goal and Description of Project
 Our goal for this project is to be able to predict stocks by combining four methods of forecasting and weighing each one based on their individual successes in order to create one method that can accurately predict each stock individually. More importantly, we want to learn and understand new methods of analyzing data and being able to apply them in real world situations. Specifically, we will look at the stock of “Disney”, “Tesla”, “Coca Cola” and based on our analysis, we will determine the future trends of these stocks. We will be using Time Series, Neural Networks, Linear Regression, and lastly our own qualitative analysis of current events in order to come to an aggregate conclusion for each stock. 
 
-## Description for Time Series
-Starting with Time Series, more specifically through the Holt-Winters method, we understand that it is good at seeing long term trends overall and only relies on historical data, which is what we have through the means of the “quantmod” library in R. Some problems in relation to Holt-Winters Time Series is that historical data may not be particularly useful in forecasting future stocks and that it doesn’t take current events into account. To do this, we will be using the “forecast” library in conjunction with the native Holt-Winters Time Series method in R and analyzing the trend it predicts from the data. 
+## Importing All the Packages and loading all the Libraries
+```{r }
+install.packages("quantmod")
+install.packages("TimeWarp")
+install.packages("xts")
+install.packages("forecast")
+install.packages("zoo")
+install.packages("lubridate")
+install.packages("neuralnet")
+install.packages("BBmisc")
 
-## Description for Neural Networks
-Moving forward with Neural Networks, we will be using the “neuralnet”, ”xts”, ”zoo”, ”lubridate”, ”BBmisc” libraries in r. We understand that it is beneficial for larger datasets and that it can be more efficient in terms of time to be run. However, our datasets are not in the size of millions and it is difficult to build and understand a neural network algorithm. Thus, it is to be expected that this method will be weighed less than other methods.
+library(quantmod)
+library(TimeWarp)
+library("xts")
+library("forecast")
+library("zoo")
+library("lubridate")
+library("neuralnet")
+```
 
-## Description for Linear Regression
-Onward, we will be looking into the Linear Regression method of predicting the future values of our chosen stocks. The method in which this will be executed is by choosing the most recent trend in the data by looking at the plot for each graph and finding a linear regression of the graphs to make predictions. Some benefits for this method is that it will use all of the data and fit the data in the best possible way and the model will also favor newer data rather than older data. Moreover, a property in Calculus is that if one restricts the domain in any graph enough, the graph will show up as linear. This is why Linear Regression is a valid form of analyzinng the data. However, there is a risk in excluding necessary data to create the trend of the graph. Additionally, this is a pretty simplistic way of predicting future stocks. Thus, this may be weighed less than other options.
+
+Getting the Tesla Data from the quantmod library
+```{r }
+getSymbols(Symbols = "TSLA", auto.assign = TRUE)
+```
+Below is a graph of the closing value for Tesla. This graph affects the whole dataset.
+```{r }
+plot(TSLA$TSLA.Close)
+```
+
+Getting the Coca Cola Data from the quantmod library
+```{r }
+getSymbols(Symbols = "KO", auto.assign = TRUE)
+```
+Below is a graph of the closing value for Tesla. This graph affects the whole dataset.
+```{r }
+plot(KO$KO.Close)
+```
+
+Getting the Disney Data from the quantmod library
+```{r }
+getSymbols(Symbols = "DIS", auto.assign = TRUE)
+```
+Below is a graph of the closing value for Tesla. This graph affects the whole dataset.
+```{r }
+plot(DIS$DIS.Close)
+```
 
 ## Description for Current Event Analysis
 Lastly, we will be using a more qualitative form of analysis through the means of current events. This analysis is very different than the other three, but we think it will bring very useful insight and context to our predictions from the other models. As this is a more general analysis, it will be most useful in predicting overall trends in the company’s future in regards to real-life situations. Some drawbacks include being too reactionary to current events, as that would impact our predictions greatly, and furthermore this method isn't scientifically based as the other three are, but despite these shortcomings, we believe the context it provides will be essential to our predictions. 
 
 
+## Description for Time Series
+Starting with Time Series, more specifically through the Holt-Winters method, we understand that it is good at seeing long term trends overall and only relies on historical data, which is what we have through the means of the “quantmod” library in R. Some problems in relation to Holt-Winters Time Series is that historical data may not be particularly useful in forecasting future stocks and that it doesn’t take current events into account. To do this, we will be using the “forecast” library in conjunction with the native Holt-Winters Time Series method in R and analyzing the trend it predicts from the data. 
+
+Here is the Holt-Winters code for the Tesla dataset. First, we create the HoltWinters data set shown below.
+```{r }
+TSLA.pred <- HoltWinters(TSLA$TSLA.Close, beta = FALSE, gamma = FALSE)
+TSLA.pred
+```
+Here is a plot of the graph predicted by HoltWinters.
+```{r }
+plot(TSLA.pred)
+```
+This is the code that has HoltWinters predict what the future of the TSLA stock could be.
+```{r }
+TSLA.pred2 <- forecast:::forecast.HoltWinters(TSLA.pred, h = 50)
+TSLA.pred2
+forecast:::plot.forecast(TSLA.pred2)
+```
+
+
+Here is the Holt-Winters code for the Coca Cola dataset. First, we create the HoltWinters data set shown below.
+```{r }
+KO.pred <- HoltWinters(KO$KO.Close, beta = FALSE, gamma = FALSE)
+KO.pred
+```
+Here is a plot of the graph predicted by HoltWinters.
+```{r }
+plot(KO.pred)
+```
+This is the code that has HoltWinters predict what the future of the TSLA stock could be.
+```{r }
+KO.pred2 <- forecast:::forecast.HoltWinters(KO.pred, h = 50)
+KO.pred2
+forecast:::plot.forecast(KO.pred2)
+```
+
+Here is the Holt-Winters code for the Disney dataset. First, we create the HoltWinters data set shown below.
+```{r }
+DIS.pred <- HoltWinters(DIS$DIS.Close, beta = FALSE, gamma = FALSE)
+DIS.pred
+```
+Here is a plot of the graph predicted by HoltWinters.
+```{r }
+plot(DIS.pred)
+```
+This is the code that has HoltWinters predict what the future of the TSLA stock could be.
+```{r }
+DIS.pred2 <- forecast:::forecast.HoltWinters(DIS.pred, h = 50)
+DIS.pred2
+forecast:::plot.forecast(DIS.pred2)
+```
+
+
+## Description for Neural Networks
+Moving forward with Neural Networks, we will be using the “neuralnet”, ”xts”, ”zoo”, ”lubridate”, ”BBmisc” libraries in r. We understand that it is beneficial for larger datasets and that it can be more efficient in terms of time to be run. However, our datasets are not in the size of millions and it is difficult to build and understand a neural network algorithm. Thus, it is to be expected that this method will be weighed less than other methods.
+
+## Description for Linear Regression
+Onward, we will be looking into the Linear Regression method of predicting the future values of our chosen stocks. The method in which this will be executed is by choosing the most recent trend in the data by looking at the plot for each graph and finding a linear regression of the graphs to make predictions. Some benefits for this method is that it will use all of the data and fit the data in the best possible way and the model will also favor newer data rather than older data. Moreover, a property in Calculus is that if one restricts the domain in any graph enough, the graph will show up as linear. This is why Linear Regression is a valid form of analyzinng the data. However, there is a risk in excluding necessary data to create the trend of the graph. Additionally, this is a pretty simplistic way of predicting future stocks. Thus, this may be weighed less than other options. The Timewarp library was used in addition to the quantmod library.
+
+Here are the steps for Linear Regression in the Tesla dataset. First we restrict the domain of the dataset to only view the most recent trend of the data.
+```{r }
+subset <- TSLA[1700:nrow(TSLA),]
+```
+We next use Chartseries with subset as the main argument.
+```{r}
+chartSeries(subset, TA = NULL, theme = "white", up.col = "green", dn.col = "red")
+```
+We then use a linear model on the same range of the chart in addition to plotting the chart.
+```{r}
+indices = 1:nrow(subset)
+model=lm(TSLA.Close~indices,data=subset)
+abline(model$coefficients[1],model$coefficients[2])
+```
+
+Based on the graph above, Tesla seems to be a stock that is decreasing in value.
+
+Here are the steps for Linear Regression in the Coca Cola dataset. First we restrict the domain of the dataset to only view the most recent trend of the data.
+```{r }
+subset = KO[1500:nrow(KO),]
+```
+We next use Chartseries with subset as the main argument.
+```{r}
+chartSeries(subset, TA = NULL, theme = "white", up.col = "green", dn.col = "red")
+```
+We then use a linear model on the same range of the chart in addition to plotting the chart.
+```{r}
+indices = 1:nrow(subset)
+model=lm(KO.Close~indices,data=subset)
+abline(model$coefficients[1],model$coefficients[2])
+```
+
+Based on the graph above, Coca Cola seems to be a stock that is increasing in value.
+
+Here are the steps for Linear Regression in the Disney dataset. First we restrict the domain of the dataset to only view the most recent trend of the data.
+```{r }
+subset <- DIS[2000:nrow(DIS),]
+```
+We next use Chartseries with subset as the main argument.
+```{r}
+chartSeries(subset, TA = NULL, theme = "white", up.col = "green", dn.col = "red")
+```
+We then use a linear model on the same range of the chart in addition to plotting the chart.
+```{r}
+indices = 1:nrow(subset)
+model=lm(DIS.Close~indices,data=subset)
+abline(model$coefficients[1],model$coefficients[2])
+```
+
+Based on the graph above, Disney seems to be a stock that is increasing in value.
+
 Based on the pros and cons of each method of forecasting, we are going to weigh each model differently, placing higher weight on Time-Series and Current Events, and lower weights on Neural Networks and Linear Regression. The different weights for each model will be based on how we expect each model to contribute to our conclusion. Since our pros and cons for the Time Series and the Current Events has led us to believe more in those methods, they will have higher contribution than Neural Networks and Linear Regression. If we learn that our method is successful, we think it could be very useful in predicting the outcome of future stocks for a variety of other companies as well.
 
 
-```{r cars}
+```{r }
 summary(cars)
 ```

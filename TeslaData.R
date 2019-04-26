@@ -111,9 +111,21 @@ TSLA.pred <- predict(TSLA.NN, TSLA.test[,1:11])
 plot(TSLA.pred)
 
 
+#Linear Regression Analysis
 
+#Filtering for all of the relevant data.
+#Getting rid of all of the "noise"
+subset <- TSLA[1700:nrow(TSLA),]
+# Work with subset from now on. Chart subset (note I removed
+# subset argument from call to chartSeries)
+chartSeries(subset, TA = NULL, theme = "white", up.col = "green", dn.col = "red")
 
+# Linear model on same range as your chart
+indices = 1:nrow(subset)
+model=lm(TSLA.Close~indices,data=subset)
 
+# Draw line
+abline(model$coefficients[1],model$coefficients[2])
 
 
 

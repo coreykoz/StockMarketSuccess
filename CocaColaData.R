@@ -49,13 +49,14 @@ model=lm(KO.Close~indices,data=subset)
 # Draw line
 abline(model$coefficients[1],model$coefficients[2])
 
-#Neural Networks
+#neural networks
+
 #Convert to dataframe + Clean
 
 KO.df <- data.frame("Open" = KO$KO.Open, "Close" = KO$KO.Close, "Year"=as.numeric(format(index(KO), "%Y")), 
                       "Month"=as.numeric(format(index(KO), "%m")), "Day"=as.numeric(format(index(KO), "%d")), 
                       "Is_Month_Start" = FALSE, "Is_Month_End" = FALSE, "Is_Year_End" = FALSE,
-                      "Is_Year_Start" = FALSE, "Is_Quarter_Start" = FALSE, "Is_Quarter_End" = FALSE, "Weekday"=weekdays(index(KO)),
+                      "Is_Year_Start" = FALSE, "Is_Quarter_Start" = FALSE, "Is_Quarter_End" = FALSE,
                       "Quarters"=quarters(index(KO)))
 
 for (i in 1:nrow(KO.df)){
@@ -99,29 +100,30 @@ for (i in 1:nrow(KO.df)){
   }
 }
 
-KO.df <- KO.df[,1:11]
+KO.df <- KO.df[,1:11]#Remove the last column, it was only used to clean data
 
-Is_Month_Start <- sapply(KO.df, is.logical)
-KO.df[,Is_Month_Start] <- lapply(KO.df[,Is_Month_Start], as.numeric)
+#change true/false values into 1/0s
+cols <- sapply(KO.df, is.logical)
+KO.df[,cols] <- lapply(KO.df[,cols], as.numeric)
 
+#normalize dataset
 KO.df <- BBmisc::normalize(KO.df)
 
 #Create training and testing data sets
 KO.train <- KO.df[1:(.75 * nrow(KO.df)),] #75% of data set
 KO.test <- KO.df[(.75 * nrow(KO.df)):nrow(KO.df),]
 
-
-#Predict with NeuralNet.prediction()
+#Predict with NeuralNet.predict()
 KO.NN <- neuralnet(KO.Close ~ KO.Open + Year + Month + Day + Is_Month_Start + Is_Month_End + Is_Year_End + 
                        Is_Year_Start + Is_Quarter_Start + Is_Quarter_End 
                      , data = KO.train, linear.output=TRUE, hidden=c(5,3,3))
-
-
 plot(KO.NN)
 
-KO.pred <- predict(KO.NN, KO.test[,1:11])
-plot(KO.pred)
+KO.pred <- predict(KO.NN, KO.test)
+KO.pred.total <- c(KO.train$KO.Close, KO.pred)
+plot(KO.pred.total, xlab="Number of Days recorded with Quantmod", ylab="Predicted Stock Value Normalized", main="Normalized Stock Predictions of KO")
+abline(v = (.75 * nrow(KO.df)), col='red')
 
-
-
+plot(KO.df$KO.Close, xlab="Number of Days recorded with Quantmod", ylab="Actual Stock Value Normalized", main="Actual Stock Values of KO")
+abline(v = (.75 * nrow(KO.df)), col='red')
 

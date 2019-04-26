@@ -36,14 +36,12 @@ forecast:::plot.forecast(TSLA.pred2)
 
 #neural networks
 
-plot(TSLA$TSLA.Close)
-
 #Convert to dataframe + Clean
 
 TSLA.df <- data.frame("Open" = TSLA$TSLA.Open, "Close" = TSLA$TSLA.Close, "Year"=as.numeric(format(index(TSLA), "%Y")), 
                       "Month"=as.numeric(format(index(TSLA), "%m")), "Day"=as.numeric(format(index(TSLA), "%d")), 
                       "Is_Month_Start" = FALSE, "Is_Month_End" = FALSE, "Is_Year_End" = FALSE,
-                      "Is_Year_Start" = FALSE, "Is_Quarter_Start" = FALSE, "Is_Quarter_End" = FALSE, "Weekday"=weekdays(index(TSLA)),
+                      "Is_Year_Start" = FALSE, "Is_Quarter_Start" = FALSE, "Is_Quarter_End" = FALSE,
                       "Quarters"=quarters(index(TSLA)))
 
 for (i in 1:nrow(TSLA.df)){
@@ -87,28 +85,32 @@ for (i in 1:nrow(TSLA.df)){
   }
 }
 
-TSLA.df <- TSLA.df[,1:11]
+TSLA.df <- TSLA.df[,1:11]#Remove the last column, it was only used to clean data
 
-Is_Month_Start <- sapply(TSLA.df, is.logical)
-TSLA.df[,Is_Month_Start] <- lapply(TSLA.df[,Is_Month_Start], as.numeric)
+#change true/false values into 1/0s
+cols <- sapply(TSLA.df, is.logical)
+TSLA.df[,cols] <- lapply(TSLA.df[,cols], as.numeric)
 
+#normalize dataset
 TSLA.df <- BBmisc::normalize(TSLA.df)
 
 #Create training and testing data sets
 TSLA.train <- TSLA.df[1:(.75 * nrow(TSLA.df)),] #75% of data set
 TSLA.test <- TSLA.df[(.75 * nrow(TSLA.df)):nrow(TSLA.df),]
 
-
-#Predict with NeuralNet.prediction()
+#Predict with NeuralNet.predict()
 TSLA.NN <- neuralnet(TSLA.Close ~ TSLA.Open + Year + Month + Day + Is_Month_Start + Is_Month_End + Is_Year_End + 
                        Is_Year_Start + Is_Quarter_Start + Is_Quarter_End 
                      , data = TSLA.train, linear.output=TRUE, hidden=c(5,3,3))
-
-
 plot(TSLA.NN)
 
-TSLA.pred <- predict(TSLA.NN, TSLA.test[,1:11])
-plot(TSLA.pred)
+TSLA.pred <- predict(TSLA.NN, TSLA.test)
+TSLA.pred.total <- c(TSLA.train$TSLA.Close, TSLA.pred)
+plot(TSLA.pred.total, xlab="Number of Days recorded with Quantmod", ylab="Predicted Stock Value Normalized", main="Normalized Stock Predictions of TSLA")
+abline(v = (.75 * nrow(TSLA.df)), col='red')
+
+plot(TSLA.df$TSLA.Close, xlab="Number of Days recorded with Quantmod", ylab="Actual Stock Value Normalized", main="Actual Stock Values of TSLA")
+abline(v = (.75 * nrow(TSLA.df)), col='red')
 
 
 #Linear Regression Analysis

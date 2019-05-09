@@ -12,22 +12,14 @@ Our goal for this project is to be able to predict stocks by combining four meth
 
 ## Importing All the Packages and loading all the Libraries
 ```{r }
-install.packages("quantmod")
-install.packages("TimeWarp")
-install.packages("xts")
-install.packages("forecast")
-install.packages("zoo")
-install.packages("lubridate")
-install.packages("neuralnet")
-install.packages("BBmisc")
-
 library(quantmod)
 library(TimeWarp)
-library("xts")
-library("forecast")
-library("zoo")
-library("lubridate")
-library("neuralnet")
+library(xts)
+library(forecast)
+library(zoo)
+library(lubridate)
+library(neuralnet)
+library(BBmisc)
 ```
 
 
@@ -52,6 +44,15 @@ plot(DIS$DIS.Close)
 ## Description for Current Event Analysis
 Lastly, we will be using a more qualitative form of analysis through the means of current events. This analysis is very different than the other three, but we think it will bring very useful insight and context to our predictions from the other models. As this is a more general analysis, it will be most useful in predicting overall trends in the company’s future in regards to real-life situations. Some drawbacks include being too reactionary to current events, as that would impact our predictions greatly, and furthermore this method isn't scientifically based as the other three are, but despite these shortcomings, we believe the context it provides will be essential to our predictions. 
 
+Current events for Tesla:
+When it comes to Tesla and News, these two terms almost come hand in hand. Be it from Elon Musk’s Twitter antics, their full line-up of S-3-X-Y cars, and announcements of a new semi-truck and sports car, it can be very hard to use current events in predicting Tesla’s future. They have some amazing developments, including battery recycling and releasing new cars recently that are more budget friendly, but also face some sharp downfalls. These include potential SEC violations that Musk faces due to his antics, a slowing down of car manufacturing for Q1 of 2019, and having the electric car as a whole not fully developed and realized hurts them as well. Overall, it is hard to predict the future of Tesla based on current events, but within the context of society and the growth of electric vehicles, it can be safe to assume Tesla will grow. 
+
+Current events for Coca Cola:
+The current events for Coca Cola are as follows. There is going to be advertising for Coca Cola in the newest Star Wars movie, which may bring significant revenue for the company. It is so a recession-proof business that has a healthy dividend, source: https://www.fool.com/investing/2019/04/14/3-reasons-coca-cola-is-a-buy.aspx. Additionally, it is a product that many people want even though people may try for healthier alternatives. Thus, expect continuous growth from Coca Cola.
+
+Current ecents for Disney:
+The current events for Disney are as follows. The company is releasing a streaming service called Disney Plus. It is going to be cheaper than Netflix but it is not expected to create much of a dent into Netflix’s market share but, it should create some slow growth for the company. Source:https://www.cnbc.com/2019/04/15/what-a-1000-dollar-investment-in-disney-10-years-ago-would-be-worth-now.html
+
 
 ## Description for Time Series
 Starting with Time Series, more specifically through the Holt-Winters method, we understand that it is good at seeing long term trends overall and only relies on historical data, which is what we have through the means of the “quantmod” library in R. Some problems in relation to Holt-Winters Time Series is that historical data may not be particularly useful in forecasting future stocks and that it doesn’t take current events into account. To do this, we will be using the “forecast” library in conjunction with the native Holt-Winters Time Series method in R and analyzing the trend it predicts from the data. 
@@ -62,8 +63,9 @@ TSLA.pred <- HoltWinters(TSLA$TSLA.Close, beta = FALSE, gamma = FALSE)
 plot(TSLA.pred)
 TSLA.pred2 <- forecast:::forecast.HoltWinters(TSLA.pred, h = 50)
 TSLA.pred2
-forecast:::plot.forecast(TSLA.pred2)
+forecast:::plot.forecast(TSLA.pred2, xlab = "Number of Days Recorded with Quantmod", ylab = "Stock Price", main = "HoltWinters Tesla")
 ```
+This shows the expected range in stock for the next 50 days.
 
 Here is the Holt-Winters code for the Coca Cola dataset. First, we create the HoltWinters data set shown below. Here is a plot of the graph predicted by HoltWinters. This is the code that has HoltWinters predict what the future of the TSLA stock could be.
 ```{r }
@@ -71,8 +73,9 @@ KO.pred <- HoltWinters(KO$KO.Close, beta = FALSE, gamma = FALSE)
 plot(KO.pred)
 KO.pred2 <- forecast:::forecast.HoltWinters(KO.pred, h = 50)
 KO.pred2
-forecast:::plot.forecast(KO.pred2)
+forecast:::plot.forecast(KO.pred2, xlab = "Number of Days Recorded with Quantmod", ylab = "Stock Price", main = "HoltWinters Coca Cola")
 ```
+This shows the expected range in stock for the next 50 days.
 
 Here is the Holt-Winters code for the Disney dataset. First, we create the HoltWinters data set shown below. Here is a plot of the graph predicted by HoltWinters. This is the code that has HoltWinters predict what the future of the TSLA stock could be.
 ```{r }
@@ -80,8 +83,9 @@ DIS.pred <- HoltWinters(DIS$DIS.Close, beta = FALSE, gamma = FALSE)
 plot(DIS.pred)
 DIS.pred2 <- forecast:::forecast.HoltWinters(DIS.pred, h = 50)
 DIS.pred2
-forecast:::plot.forecast(DIS.pred2)
+forecast:::plot.forecast(DIS.pred2, xlab = "Number of Days Recorded with Quantmod", ylab = "Stock Price", main = "HoltWinters Disney")
 ```
+This shows the expected range in stock for the next 50 days.
 
 ## Description for Neural Networks
 Moving forward with Neural Networks, we will be using the “neuralnet”, ”xts”, ”zoo”, ”lubridate”, ”BBmisc” libraries in r. We understand that it is beneficial for larger datasets and that it can be more efficient in terms of time to be run. However, our datasets are not in the size of millions and it is difficult to build and understand a neural network algorithm. Thus, it is to be expected that this method will be weighed less than other methods.
@@ -385,9 +389,14 @@ abline(model$coefficients[1],model$coefficients[2])
 
 Based on the graph above, Disney seems to be a stock that is increasing in value.
 
+## Conclusion
 Based on the pros and cons of each method of forecasting, we are going to weigh each model differently, placing higher weight on Time-Series and Current Events, and lower weights on Neural Networks and Linear Regression. The different weights for each model will be based on how we expect each model to contribute to our conclusion. Since our pros and cons for the Time Series and the Current Events has led us to believe more in those methods, they will have higher contribution than Neural Networks and Linear Regression. If we learn that our method is successful, we think it could be very useful in predicting the outcome of future stocks for a variety of other companies as well.
 
+In terms of Tesla, we predicted that the current events would have an increase for the stock value. The Holt-winters analysis predicted a large range of values for the future, which creates a lot of uncertainty. The Linear regression analysis showed that the Tesla stock tended to decrease. The Neural Network analysis did not really fit the Tesla data and we wouldn’t feel safe using this, in a different context, to predict Tesla’s future. Thus, we are not sure what will happen with the Tesla stock in the future due to the conflicting analysis’ for Linear Regression and Current Events.
 
-```{r }
-summary(cars)
-```
+For Coca Cola, we found that in almost every test that it would end up growing. For Current Events, we found that everything that is happening for that company overall benefits them and Holt Winters Time Series we found that the range of values isn’t nearly as volatile as Tesla’s. These two tests we valued higher than the other two, but despite that, we found that Linear Regression also increased alongside having Neural Networks be very accurate in predictions. With that knowledge, if we could apply Neural Networks in a different context and predict it, we believe it would also see an increase. Overall, all of our tests tend to lead towards Coca Cola only growing from here.
+
+Finally, the Disney stock should grow slowly based on the following results. The Current Event analysis had the stock increasing, the Linear Regression indicated in an increasing stock value, and the Holt-Winters had a smaller range of possible values for Disney. The Neural Networks was also very accurate in its analysis. With that knowledge, if we could apply Neural Networks in a different context and predict it, we believe it would also see an increase.
+
+From this project, we noticed a few trends that were apparent. First of all, if Holt Winters performed well and had not that much uncertainty, we found that Neural Networks would perform very well. If it did, Neural Networks struggled to perform, as seen in the tests ran on Tesla. In addition, we found that for all 3 companies, current events would always lead to us believing in an increase to the stock value. This could be very dependent on our biases, in the sense of how we value each event, in addition to news source articles that we received the information from. Overall, it was very interesting applying and learning new ways to predict real-life situations.
+
